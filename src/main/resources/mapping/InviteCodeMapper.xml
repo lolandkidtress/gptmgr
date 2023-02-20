@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.openapi.Dao.InviteCodeMapper">
+  <resultMap id="BaseResultMap" type="com.openapi.Model.InviteCode">
+    <result column="id" jdbcType="VARCHAR" property="id" />
+    <result column="deleteflg" jdbcType="BIGINT" property="deleteflg" />
+    <result column="createtime" jdbcType="TIMESTAMP" property="createtime" />
+    <result column="updatetime" jdbcType="TIMESTAMP" property="updatetime" />
+    <result column="code" jdbcType="VARCHAR" property="code" />
+    <result column="produceopenid" jdbcType="VARCHAR" property="produceopenid" />
+    <result column="consumeopenid" jdbcType="VARCHAR" property="consumeopenid" />
+  </resultMap>
+
+  <sql id="Base_Column_List">
+    id, deleteflg, createtime, updatetime, code, produceopenid,consumeopenid
+  </sql>
+  <select id="selectById" parameterType="string" resultType="com.openapi.Model.InviteCode">
+    select <include refid="Base_Column_List" />
+    from InviteCode
+    where 1=1
+    and deleteflg = 0
+    and id = #{id,jdbcType=VARCHAR}
+  </select>
+  <select id="getByCode" parameterType="string" resultType="com.openapi.Model.InviteCode">
+    select <include refid="Base_Column_List" />
+    from InviteCode
+    where 1=1
+    and deleteflg = 0
+    and code = #{code,jdbcType=VARCHAR}
+    and consumeopenid = #{consumeopenId,jdbcType=VARCHAR}
+    limit 1
+  </select>
+
+  <select id="count" parameterType="string"  resultType="java.lang.Integer">
+    select count(1) as cnt
+    from InviteCode
+    where 1=1
+    and deleteflg = 0
+    and code = #{code,jdbcType=VARCHAR}
+  </select>
+
+
+  <insert id="insert" parameterType="com.openapi.Model.CodeUser">
+    insert into InviteCode
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        id,
+      </if>
+      <if test="createtime != null">
+        createtime,
+      </if>
+      <if test="code != null">
+        code,
+      </if>
+      <if test="produceopenid != null">
+        produceopenid,
+      </if>
+      <if test="consumeopenid != null">
+        consumeopenid,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        #{id,jdbcType=VARCHAR},
+      </if>
+      <if test="createtime != null">
+        #{createtime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="code != null">
+        #{code,jdbcType=VARCHAR},
+      </if>
+      <if test="produceopenid != null">
+        #{produceopenid,jdbcType=VARCHAR},
+      </if>
+      <if test="consumeopenid != null">
+        #{consumeopenid,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+</mapper>

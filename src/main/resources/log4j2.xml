@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration status="off" monitorInterval="1800">
+    <properties>
+        <!--dir-->
+        <property name="LOG_HOME">logs</property>
+        <!--filename-->
+        <property name="FILE_NAME">mgr</property>
+    </properties>
+
+    <Appenders>
+
+        <Console name="Console" target="SYSTEM_OUT">
+            <PatternLayout
+                    pattern="%date{yyyy-MM-dd HH:mm:ss.SSS} %level [%thread][%file:%line] - %msg%n"/>
+        </Console>
+        <RollingRandomAccessFile name="RollingLog"
+                                 fileName="${LOG_HOME}/${FILE_NAME}.log"
+                                 filePattern="${LOG_HOME}/${FILE_NAME}.log.%d{yyyy-MM-dd_HH}_%i.gz">
+            <PatternLayout
+                    pattern="%date{yyyy-MM-dd HH:mm:ss.SSS} [${sys:realIP}] %level [%thread][%file:%line] - %msg%n"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy interval="1" modulate="true"/>
+                <SizeBasedTriggeringPolicy size="500 MB"/>
+            </Policies>
+            <DefaultRolloverStrategy max="20"/>
+        </RollingRandomAccessFile>
+    </Appenders>
+    <loggers>
+        <logger name="org.redisson" level="ERROR"></logger>
+        <root level="INFO" includeLocation="true">
+            <appender-ref ref="RollingLog"/>
+            <appender-ref ref="Console"/>
+        </root>
+
+    </loggers>
+
+
+</configuration>

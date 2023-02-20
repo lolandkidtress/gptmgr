@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.openapi.Dao.CodeUserMapper">
+  <resultMap id="BaseResultMap" type="com.openapi.Model.CodeUser">
+    <result column="id" jdbcType="VARCHAR" property="id" />
+    <result column="deleteflg" jdbcType="BIGINT" property="deleteflg" />
+    <result column="createtime" jdbcType="TIMESTAMP" property="createtime" />
+    <result column="updatetime" jdbcType="TIMESTAMP" property="updatetime" />
+    <result column="openid" jdbcType="VARCHAR" property="openid" />
+    <result column="unionid" jdbcType="VARCHAR" property="unionid" />
+    <result column="appid" jdbcType="VARCHAR" property="appid" />
+    <result column="apikey" jdbcType="VARCHAR" property="apikey" />
+    <result column="invitecode" jdbcType="VARCHAR" property="invitecode" />
+  </resultMap>
+
+  <sql id="Base_Column_List">
+    id, deleteflg, createtime, updatetime, appid,openid, unionid,apikey,invitecode
+  </sql>
+  <select id="selectById" parameterType="string" resultType="com.openapi.Model.CodeUser">
+    select <include refid="Base_Column_List" />
+    from CodeUser
+    where 1=1
+    and deleteflg = 0
+    and id = #{id,jdbcType=VARCHAR}
+  </select>
+  <select id="getCodeUserByOpenId" parameterType="string" resultType="com.openapi.Model.CodeUser">
+    select <include refid="Base_Column_List" />
+    from CodeUser
+    where 1=1
+    and deleteflg = 0
+    and openid = #{openid,jdbcType=VARCHAR}
+    limit 1
+  </select>
+
+  <select id="getCodeUserByInviteCode" parameterType="string" resultType="com.openapi.Model.CodeUser">
+    select <include refid="Base_Column_List" />
+    from CodeUser
+    where 1=1
+    and deleteflg = 0
+    and invitecode = #{invitecode,jdbcType=VARCHAR}
+    limit 1
+  </select>
+
+  <select id="count" parameterType="map" resultType="java.lang.Integer">
+    select count(*) from CodeUser
+    where 1=1
+    and and deleteflg = 0
+  </select>
+  <delete id="deleteByOpenId" parameterType="string">
+    update CodeUser set deleteflg = 1,updatetime = CURRENT_TIMESTAMP
+    where openid = #{openid,jdbcType=VARCHAR}
+  </delete>
+  <insert id="upsert" parameterType="com.openapi.Model.CodeUser">
+    insert into CodeUser
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        id,
+      </if>
+      <if test="createtime != null">
+        createtime,
+      </if>
+      <if test="appid != null">
+        appid,
+      </if>
+      <if test="openid != null">
+        openid,
+      </if>
+      <if test="unionid != null">
+        unionid,
+      </if>
+      <if test="apikey != null">
+        apikey,
+      </if>
+      <if test="invitecode != null">
+        invitecode,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        #{id,jdbcType=VARCHAR},
+      </if>
+      <if test="createtime != null">
+        #{createtime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="appid != null">
+        #{appid,jdbcType=VARCHAR},
+      </if>
+      <if test="openid != null">
+        #{openid,jdbcType=VARCHAR},
+      </if>
+      <if test="unionid != null">
+        #{unionid,jdbcType=VARCHAR},
+      </if>
+      <if test="apikey != null">
+        #{apikey,jdbcType=VARCHAR},
+      </if>
+      <if test="invitecode != null">
+        #{invitecode,jdbcType=VARCHAR},
+      </if>
+    </trim>
+    ON DUPLICATE KEY UPDATE
+    <trim suffixOverrides=",">
+      <if test="updatetime != null">
+        updatetime = #{updatetime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="appid != null">
+        appid = #{appid,jdbcType=VARCHAR},
+      </if>
+      <if test="openid != null">
+        openid = #{openid,jdbcType=VARCHAR},
+      </if>
+      <if test="unionid != null">
+        unionid = #{unionid,jdbcType=VARCHAR},
+      </if>
+      <if test="apikey != null">
+        apikey = #{apikey,jdbcType=VARCHAR},
+      </if>
+      <if test="invitecode != null">
+        invitecode = #{invitecode,jdbcType=VARCHAR},
+      </if>
+      <if test="deleteflg != null">
+        deleteflg = #{deleteflg,jdbcType=BIGINT},
+      </if>
+    </trim>
+  </insert>
+</mapper>

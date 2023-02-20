@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.openapi.Dao.CodeUserQuotaMapper">
+  <resultMap id="BaseResultMap" type="com.openapi.Model.CodeUserQuota">
+    <result column="id" jdbcType="VARCHAR" property="id" />
+    <result column="deleteflg" jdbcType="BIGINT" property="deleteflg" />
+    <result column="updatetime" jdbcType="TIMESTAMP" property="updatetime" />
+    <result column="openid" jdbcType="VARCHAR" property="openid" />
+    <result column="cnt" jdbcType="BIGINT" property="cnt" />
+    <result column="maxcnt" jdbcType="BIGINT" property="maxcnt" />
+  </resultMap>
+
+
+  <sql id="Base_Column_List">
+    id, deleteflg, updatetime, cnt,openid,maxcnt
+  </sql>
+  <select id="selectById" parameterType="string" resultType="com.openapi.Model.CodeUserQuota">
+    select <include refid="Base_Column_List" />
+    from CodeUserQuota
+    where 1=1
+    and deleteflg = 0
+    and id = #{id,jdbcType=VARCHAR}
+  </select>
+  <select id="getCodeUserQuotaByOpenId" parameterType="string" resultType="com.openapi.Model.CodeUserQuota">
+    select <include refid="Base_Column_List" />
+    from CodeUserQuota
+    where 1=1
+    and deleteflg = 0
+    and openid = #{openid,jdbcType=VARCHAR}
+    limit 1
+  </select>
+
+  <select id="count" parameterType="map" resultType="java.lang.Integer">
+    select count(*) from CodeUserQuota
+    where 1=1
+    and and deleteflg = 0
+  </select>
+  <delete id="deleteByOpenId" parameterType="string">
+    update CodeUserQuota set deleteflg = 1,updatetime = CURRENT_TIMESTAMP
+    where openid = #{openid,jdbcType=VARCHAR}
+  </delete>
+  <insert id="upsert" parameterType="com.openapi.Model.CodeUserQuota">
+    insert into CodeUserQuota
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        id,
+      </if>
+      <if test="updatetime != null">
+        updatetime,
+      </if>
+      <if test="openid != null">
+        openid,
+      </if>
+      <if test="cnt != null">
+        cnt,
+      </if>
+      <if test="maxcnt != null">
+        maxcnt,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        #{id,jdbcType=VARCHAR},
+      </if>
+      <if test="updatetime != null">
+        #{updatetime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="openid != null">
+        #{openid,jdbcType=VARCHAR},
+      </if>
+      <if test="cnt != null">
+        #{cnt,jdbcType=BIGINT},
+      </if>
+      <if test="maxcnt != null">
+        #{maxcnt,jdbcType=BIGINT},
+      </if>
+    </trim>
+    ON DUPLICATE KEY UPDATE
+    <trim suffixOverrides=",">
+      <if test="updatetime != null">
+        updatetime = #{updatetime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="cnt != null">
+        cnt = #{cnt,jdbcType=BIGINT},
+      </if>
+      <if test="maxcnt != null">
+        maxcnt = #{maxcnt,jdbcType=BIGINT},
+      </if>
+    </trim>
+  </insert>
+</mapper>

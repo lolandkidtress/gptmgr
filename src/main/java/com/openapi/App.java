@@ -14,7 +14,7 @@ import org.springframework.context.annotation.ComponentScan;
 public class App {
     public static void main(String[] args) {
 
-        System.setProperty("server.servlet.context-path", "/TCGMGR");
+        System.setProperty("server.servlet.context-path", "/GPTMGR");
 
         SpringApplicationBuilder builder = new SpringApplicationBuilder(App.class);
 

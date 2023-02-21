@@ -196,26 +196,6 @@ public class CodeUserService {
             return Return.FAIL(BasicCode.error);
         }
 
-        CodeUserQuota quota = getQuota(openId);
-
-        if(quota==null){
-            logger.info("没有 {} 的quota的记录" , openId);
-            return Return.FAIL(BasicCode.quota_over_limit);
-        }
-
-        if(quota.getCnt() > quota.getMaxcnt()){
-
-            if(quota.getUpdatetime().getTime() >= getTodayZeroTimeStamp() ){
-                logger.info("{} 的quota超过" , openId);
-                return Return.FAIL(BasicCode.quota_over_limit);
-            }else{
-                // 每天重置
-                quota.setCnt(0);
-                quota.setUpdatetime(new Date());
-                saveQuota(quota);
-            }
-        }
-
         Map header = new HashMap();
 
         header.put("authorization","Bearer "+ getKey());
@@ -246,6 +226,27 @@ public class CodeUserService {
             }
         }
         if("post".equals(method)){
+
+            CodeUserQuota quota = getQuota(openId);
+
+            if(quota==null){
+                logger.info("没有 {} 的quota的记录" , openId);
+                return Return.FAIL(BasicCode.quota_over_limit);
+            }
+
+            if(quota.getCnt() > quota.getMaxcnt()){
+
+                if(quota.getUpdatetime().getTime() >= getTodayZeroTimeStamp() ){
+                    logger.info("{} 的quota超过" , openId);
+                    return Return.FAIL(BasicCode.quota_over_limit);
+                }else{
+                    // 每天重置
+                    quota.setCnt(0);
+                    quota.setUpdatetime(new Date());
+                    saveQuota(quota);
+                }
+            }
+
             try{
                 String url = "https://api.openai.com/v1/completions";
                 OkHttpClient client = getUnsafeOkHttpClient();

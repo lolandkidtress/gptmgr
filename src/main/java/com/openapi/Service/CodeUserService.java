@@ -198,7 +198,7 @@ public class CodeUserService {
 
         Map header = new HashMap();
 
-        header.put("authorization","Bearer "+ getKey());
+        header.put("authorization","Bearer "+ "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");
         // 获取所有的模型,这里用来检测apikey是否有效
         if("get".equals(method)){
             try{
@@ -218,10 +218,11 @@ public class CodeUserService {
 //                    return Return.FAIL(BasicCode.error);
 //                }
                 String str = OkHttpTools.sslget(url,header,30,header);
+                logger.info("返回的models:{}",str);
                 return Return.SUCCESS(BasicCode.success).data(str);
             }catch(Exception e){
                 e.printStackTrace();
-                logger.error("请求异常" , openId);
+                logger.error("请求异常:{}" , e.getMessage());
                 return Return.FAIL(BasicCode.error);
             }
         }
@@ -270,7 +271,7 @@ public class CodeUserService {
 
                 Request request = new Request.Builder()
                     .url(url)
-                    .header("authorization","Bearer "+ getKey())
+                    .header("authorization","Bearer "+ "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")
                     .post(body)
                     .build();
 
@@ -302,7 +303,7 @@ public class CodeUserService {
                     }
                 } catch (IOException e) {
                     e.printStackTrace();
-                    logger.error("请求异常" , openId);
+                    logger.error("请求异常:{}" , e.getMessage());
                     return Return.FAIL(BasicCode.error);
                 }
             }catch(Exception e){

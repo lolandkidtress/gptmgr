@@ -5,7 +5,9 @@ import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -187,7 +189,7 @@ public class CodeUserService {
 
     public Return doRequest(String method, String openId,String questions,Map<String,String> params){
 
-        String apikey = _tgDataSourceConfig.getApikey();
+        String apikey = getKey();
 
         if(Strings.isNullOrEmpty(apikey)){
             logger.info("没有apikey" );
@@ -216,7 +218,7 @@ public class CodeUserService {
 
         Map header = new HashMap();
 
-        header.put("authorization","Bearer "+"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");
+        header.put("authorization","Bearer "+ getKey());
         // 获取所有的模型,这里用来检测apikey是否有效
         if("get".equals(method)){
             try{
@@ -267,7 +269,7 @@ public class CodeUserService {
 
                 Request request = new Request.Builder()
                     .url(url)
-                    .header("authorization","Bearer "+"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")
+                    .header("authorization","Bearer "+ getKey())
                     .post(body)
                     .build();
 
@@ -324,6 +326,12 @@ public class CodeUserService {
         return calendar.getTimeInMillis();
     }
 
+    private String getKey(){
+        String str_keys = _tgDataSourceConfig.getApikey();
+        List<String> keys = Arrays.asList(str_keys.split(","));
+        Collections.shuffle(keys);
+        return keys.get(0);
+    }
 
     private static OkHttpClient getUnsafeOkHttpClient() throws NoSuchAlgorithmException, KeyManagementException {
         // 创建一个信任所有证书的 TrustManager

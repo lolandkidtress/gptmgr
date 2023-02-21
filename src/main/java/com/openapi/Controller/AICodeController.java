@@ -151,8 +151,7 @@ public class AICodeController {
         if (Strings.isNullOrEmpty(question)) {
             return Return.FAIL(BasicCode.parameters_incorrect);
         }
-        return Return.SUCCESS(BasicCode.success).data("中所有低于等于500的偶数?\\n\\ndef evenFibonacci(n):\\n    result = []\\n    # Initialize first two even Fibonacci numbers \\n    f1 = 0\\n    f2 = 2\\n \\n    # Add the first two even numbers to result \\n    result.append(f1)\\n    result.append(f2)\\n \\n    next_even_fib = f1 + f2\\n \\n    # Calculate and add remaining even numbers of the \\n    # Fibonacci series till n\\n    while(next_even_fib <= n):\\n        result.append(next_even_fib)\\n        next_even_fib = 4 * f2 + f1\\n        f1 = f2\\n        f2 = next_even_fib\\n \\n    # Print all even elements of result\\n    print(*result, sep = \\\", \\\")\\n \\n# Driver code\\nn = 500\\nevenFibonacci(n)");
-
+        return Return.SUCCESS(BasicCode.success).data("\n\npublic class FibonacciSeries { \n    public static void main(String[] args) { \n\n        int num1 = 0; \n        int num2 = 1; \n\n        System.out.print(\"Fibonacci Series of first 10 numbers: \"); \n\n        for (int i = 1; i <= 10; ++i) \n        { \n            System.out.print(num1 + \" \"); \n\n            int temp = num1 + num2; \n            num1 = num2; \n            num2 = temp; \n        } \n    } \n}");
     }
 
     @PostMapping("/getModel")

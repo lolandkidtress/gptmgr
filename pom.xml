@@ -120,30 +120,5 @@
     </resources>
 
   </build>
-  <profiles>
-    <profile>
-      <id>dev</id>
-      <activation>
-        <activeByDefault>true</activeByDefault>
-      </activation>
-      <build>
-        <filters>
-          <filter>src/main/resources/env/dev.properties</filter>
-        </filters>
-      </build>
-    </profile>
-    <profile>
-      <id>prod</id>
-      <activation>
-        <activeByDefault>false</activeByDefault>
-      </activation>
-      <build>
-        <filters>
-          <filter>src/main/resources/env/pro.properties</filter>
-        </filters>
-      </build>
-    </profile>
-  </profiles>
-
 
 </project>

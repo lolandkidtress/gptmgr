@@ -127,7 +127,6 @@ public class AICodeController {
     public Return doRequest(@RequestBody Map<String,String> postQuestion) {
         String openId = postQuestion.get("openId");
         String question = postQuestion.get("question");
-        String method = postQuestion.get("method");
 
         if (Strings.isNullOrEmpty(openId)) {
             return Return.FAIL(BasicCode.parameters_incorrect);
@@ -136,14 +135,13 @@ public class AICodeController {
             return Return.FAIL(BasicCode.parameters_incorrect);
         }
 
-        return _codeUserService.doRequest(method,openId,question,postQuestion);
+        return _codeUserService.doRequest(openId,question);
     }
     // 假接口,用于调试
     @PostMapping("/doDummy")
     public Return doDummy(@RequestBody Map<String,String> postQuestion) {
         String openId = postQuestion.get("openId");
         String question = postQuestion.get("question");
-        String method = postQuestion.get("method");
 
         if (Strings.isNullOrEmpty(openId)) {
             return Return.FAIL(BasicCode.parameters_incorrect);
@@ -154,20 +152,35 @@ public class AICodeController {
         return Return.SUCCESS(BasicCode.success).data("\n\npublic class FibonacciSeries { \n    public static void main(String[] args) { \n\n        int num1 = 0; \n        int num2 = 1; \n\n        System.out.print(\"Fibonacci Series of first 10 numbers: \"); \n\n        for (int i = 1; i <= 10; ++i) \n        { \n            System.out.print(num1 + \" \"); \n\n            int temp = num1 + num2; \n            num1 = num2; \n            num2 = temp; \n        } \n    } \n}");
     }
 
-    @PostMapping("/getModel")
-    public Return getModel(@RequestBody Map<String,String> postQuestion) throws Exception{
-        String openId = postQuestion.get("openId");
-        String question = postQuestion.get("question");
+    @GetMapping("/getModel")
+    public Return getModel() throws Exception{
+        String apikey = _codeUserService.getRandomKey();
 
-        if (Strings.isNullOrEmpty(openId)) {
-            return Return.FAIL(BasicCode.parameters_incorrect);
+        if(Strings.isNullOrEmpty(apikey)){
+            logger.info("没有可用apikey" );
+            return Return.FAIL(BasicCode.error);
         }
-        if (Strings.isNullOrEmpty(question)) {
-            return Return.FAIL(BasicCode.parameters_incorrect);
+        return _codeUserService.getModel(apikey);
+    }
+
+
+    // 通过invalidkey / keys 来计算可用行
+    @GetMapping("/getServerUsability")
+    public Return getServerUsability() throws Exception{
+        String apikey = _codeUserService.getRandomKey();
+
+        if(Strings.isNullOrEmpty(apikey)){
+            logger.info("没有可用apikey" );
+            return Return.FAIL(BasicCode.error);
         }
+        String f = _codeUserService.getServerUsability();
+        return Return.SUCCESS(BasicCode.success).data(f);
+    }
 
-
-        return _codeUserService.doRequest("get",openId,question,postQuestion);
+    @GetMapping("/checkValidKey")
+    public Return checkValidKey() throws Exception{
+        _codeUserService.checkValidKey();
+        return Return.SUCCESS(BasicCode.success);
     }
 
 

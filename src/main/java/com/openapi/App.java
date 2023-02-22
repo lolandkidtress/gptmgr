@@ -5,12 +5,14 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.web.servlet.ServletComponentScan;
 import org.springframework.context.annotation.ComponentScan;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 
 @EnableAutoConfiguration
 @ComponentScan(basePackages = {"com.openapi.*"})
 @ServletComponentScan({"com.openapi.*"})
 @SpringBootApplication
+@EnableScheduling
 public class App {
     public static void main(String[] args) {
 

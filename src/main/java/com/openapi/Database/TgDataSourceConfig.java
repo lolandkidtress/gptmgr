@@ -43,6 +43,9 @@ public class TgDataSourceConfig {
     @Value("${apikey}")
     private String apikey;
 
+    @Value("${chatserver}")
+    private String chatserver;
+
     @Primary
     @Bean(name = "huarongdaoDataSource")
     public DataSource clusterDataSource() {
@@ -84,5 +87,13 @@ public class TgDataSourceConfig {
 
     public void setApikey(String apikey) {
         this.apikey = apikey;
+    }
+
+    public String getChatserver() {
+        return chatserver;
+    }
+
+    public void setChatserver(String chatserver) {
+        this.chatserver = chatserver;
     }
 }

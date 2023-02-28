@@ -122,7 +122,7 @@ public class AICodeController {
         }
         return _codeUserService.inputCode(openId,code);
     }
-
+    // 官方接口
     @PostMapping("/doRequest")
     public Return doRequest(@RequestBody Map<String,String> postQuestion) {
         String openId = postQuestion.get("openId");
@@ -136,6 +136,21 @@ public class AICodeController {
         }
 
         return _codeUserService.doRequest(openId,question);
+    }
+    // chatgpt网页接口
+    @PostMapping("/doChat")
+    public Return doChat(@RequestBody Map<String,String> postQuestion) {
+        String openId = postQuestion.get("openId");
+        String question = postQuestion.get("question");
+
+        if (Strings.isNullOrEmpty(openId)) {
+            return Return.FAIL(BasicCode.parameters_incorrect);
+        }
+        if (Strings.isNullOrEmpty(question)) {
+            return Return.FAIL(BasicCode.parameters_incorrect);
+        }
+
+        return _codeUserService.doChat(openId,question);
     }
     // 假接口,用于调试
     @PostMapping("/doDummy")
@@ -167,12 +182,6 @@ public class AICodeController {
     // 通过invalidkey / keys 来计算可用行
     @GetMapping("/getServerUsability")
     public Return getServerUsability() throws Exception{
-        String apikey = _codeUserService.getRandomKey();
-
-        if(Strings.isNullOrEmpty(apikey)){
-            logger.info("没有可用apikey" );
-            return Return.FAIL(BasicCode.error);
-        }
         String f = _codeUserService.getServerUsability();
         return Return.SUCCESS(BasicCode.success).data(f);
     }

@@ -1,6 +1,5 @@
 package com.openapi.Service;
 
-import java.io.IOException;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
@@ -36,16 +35,13 @@ import com.openapi.Model.ChatHist;
 import com.openapi.Model.CodeUser;
 import com.openapi.Model.CodeUserQuota;
 import com.openapi.Model.InviteCode;
+import com.openapi.tools.OkHttpClientUtil.OkHttpTools;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 import okhttp3.Headers;
-import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
 
 
 @Service
@@ -54,6 +50,8 @@ public class CodeUserService {
     private static Logger logger = LogManager.getLogger(CodeUserService.class);
 
     public Set<String> Invalidkey = new HashSet<>();
+    // quota用完的
+    public Set<String> QuotaKey = new HashSet<>();
 
     @Autowired
     TgDataSourceConfig _tgDataSourceConfig;
@@ -228,7 +226,7 @@ public class CodeUserService {
                 if(Invalidkey.size()>0){
                     logger.error("失效的key:{}",JsonConvert.toJson(Invalidkey));
                 }else{
-                    logger.info("全部通过");
+                    // logger.info("全部通过");
                 }
             }
         };
@@ -243,40 +241,162 @@ public class CodeUserService {
         header.put("authorization","Bearer "+ key);
         Headers headers = Headers.of(header);
 
+//        try{
+//            String url = "https://api.openai.com/v1/models";
+//            OkHttpClient client = getUnsafeOkHttpClient();
+//
+//            Request request = new Request.Builder()
+//                .url(url)
+//                .headers(headers)
+//                // .header("authorization","Bearer "+"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")
+//                .build();
+//
+//            try (Response response = client.newCall(request).execute()) {
+//
+//                String str = response.body().string();
+//                logger.info("查询model返回:{}",str);
+//                Map data = JsonConvert.toObject(str,Map.class);
+//                if(data.containsKey("error")){
+//                    String message = String.valueOf(data.get("message"));
+//                    return Return.FAIL(BasicCode.error).note(message);
+//                }else{
+//                    return Return.SUCCESS(BasicCode.success).data(str);
+//                }
+//                // return Return.SUCCESS(BasicCode.success).data(response.body().string());
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//                logger.error("请求异常:{}",e);
+//                return Return.FAIL(BasicCode.error);
+//            }
+//
+//
+//        }catch(Exception e){
+//            e.printStackTrace();
+//            logger.error("请求异常:{}" , e.getMessage());
+//            return Return.FAIL(BasicCode.error);
+//        }
+
         try{
-            String url = "https://api.openai.com/v1/models";
-            OkHttpClient client = getUnsafeOkHttpClient();
+            String url = "http://u.7scrm.com/lowCode/mingdaoyun/v1/gpt/getModel";
+            Map param = new HashMap();
+            param.put("apikey",key);
 
-            Request request = new Request.Builder()
-                .url(url)
-                .headers(headers)
-                // .header("authorization","Bearer "+"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")
-                .build();
+            String str = OkHttpTools.get(url,param);
+            // logger.debug("查询model返回:{}",str);
 
-            try (Response response = client.newCall(request).execute()) {
+            Return ret_data = JsonConvert.toObject(str,Return.class);
 
-                String str = response.body().string();
-                logger.info("查询model返回:{}",str);
-                Map data = JsonConvert.toObject(str,Map.class);
-                if(data.containsKey("error")){
-                    String message = String.valueOf(data.get("message"));
-                    return Return.FAIL(BasicCode.error).note(message);
-                }else{
-                    return Return.SUCCESS(BasicCode.success).data(str);
-                }
-                // return Return.SUCCESS(BasicCode.success).data(response.body().string());
-            } catch (IOException e) {
-                e.printStackTrace();
-                logger.error("请求异常:{}",e);
+            if(ret_data.is_success()){
+                return Return.SUCCESS(BasicCode.success).data(ret_data.get_data());
+            }else{
                 return Return.FAIL(BasicCode.error);
             }
-
-
         }catch(Exception e){
             e.printStackTrace();
             logger.error("请求异常:{}" , e.getMessage());
             return Return.FAIL(BasicCode.error);
         }
+    }
+//    public Return doRequest(String openId,String questions){
+//
+//        String apikey = getRandomKey();
+//
+//        if(Strings.isNullOrEmpty(apikey)){
+//            logger.info("没有apikey" );
+//            return Return.FAIL(BasicCode.error);
+//        }
+//
+//        Map header = new HashMap();
+//        header.put("authorization","Bearer "+ "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");
+//        Headers headers = Headers.of(header);
+//
+//        CodeUserQuota quota = getQuota(openId);
+//
+//        if(quota==null){
+//            logger.info("没有 {} 的quota的记录" , openId);
+//            return Return.FAIL(BasicCode.quota_over_limit);
+//        }
+//
+//        if(quota.getCnt() > quota.getMaxcnt()){
+//
+//            if(quota.getUpdatetime().getTime() >= getTodayZeroTimeStamp() ){
+//                logger.info("{} 的quota超过" , openId);
+//                return Return.FAIL(BasicCode.quota_over_limit);
+//            }else{
+//                // 每天重置
+//                quota.setCnt(0);
+//                quota.setUpdatetime(new Date());
+//                saveQuota(quota);
+//            }
+//        }
+//
+//        try{
+//            String url = "https://api.openai.com/v1/completions";
+//            OkHttpClient client = getUnsafeOkHttpClient();
+//            Map chatParam = new HashMap();
+//            chatParam.put("model","text-davinci-003");
+//
+//            String prompt = "现在你在一所大学中担任老师,我会给你一些题目,你需要通过代码的形式,返回结果,我的问题是:";
+//            chatParam.put("prompt",prompt.concat(questions));
+//            // 最多只能输出4k字,所以要控制返回的字符数量
+//            chatParam.put("max_tokens",3500 - questions.length());
+//
+////                String str_ret = OkHttpTools.sslpost(OkHttpTools.MEDIA_TYPE_JSON, url, JsonConvert.toJson(chatParam), 30, header);
+////                return Return.SUCCESS(BasicCode.success).data(str_ret);
+////
+//
+//            String requestBody = JsonConvert.toJson(chatParam); // 请求体，JSON 格式
+//
+//            MediaType mediaType = MediaType.parse("application/json; charset=utf-8"); // 设置请求体的媒体类型
+//            RequestBody body = RequestBody.create(requestBody, mediaType); // 创建请求体
+//
+//
+//            Request request = new Request.Builder()
+//                .url(url)
+//                .headers(headers)
+//                //.header("authorization","Bearer "+ "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")
+//                .post(body)
+//                .build();
+//
+//            logger.info("{}的问题:{}",openId,questions);
+//            try (Response response = client.newCall(request).execute()) {
+//                String str_res = response.body().string();
+//
+//                logger.info("返回:{}",str_res);
+//                ChatHist chatHist = new ChatHist();
+//                chatHist.setOpenid(openId);
+//                chatHist.setQuestion(questions);
+//                chatHist.setResult(str_res);
+//                _chatHistMapper.insert(chatHist);
+//
+//                Map map_res = JsonConvert.toObject(str_res,Map.class);
+//                if(map_res.containsKey("error")){
+//                    Map errorMsg = JsonConvert.toObject(JsonConvert.toJson(map_res.get("error")), Map.class);
+//                    String type = String.valueOf(errorMsg.get("type"));
+//                    // TODO 提醒
+//                    if("insufficient_quota".equals(type)){
+//
+//                    }
+//                    return Return.FAIL(BasicCode.error);
+//                }else{
+//                    List choices = JsonConvert.toObject(JsonConvert.toJson(map_res.get("choices")), List.class);
+//                    Map content = JsonConvert.toObject(JsonConvert.toJson(choices.get(0)), Map.class);
+//                    String text = String.valueOf(content.get("text"));
+//                    return Return.SUCCESS(BasicCode.success).data(text);
+//                }
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//                logger.error("请求异常:{}" , e.getMessage());
+//                return Return.FAIL(BasicCode.error);
+//            }
+//        }catch(Exception e){
+//            e.printStackTrace();
+//            logger.error("请求异常" , openId);
+//            return Return.FAIL(BasicCode.error);
+//        }
+
+    public Return doChat(String openId,String questions){
+        return Return.FAIL(BasicCode.error);
     }
     public Return doRequest(String openId,String questions){
 
@@ -286,10 +406,6 @@ public class CodeUserService {
             logger.info("没有apikey" );
             return Return.FAIL(BasicCode.error);
         }
-
-        Map header = new HashMap();
-        header.put("authorization","Bearer "+ "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");
-        Headers headers = Headers.of(header);
 
         CodeUserQuota quota = getQuota(openId);
 
@@ -312,63 +428,36 @@ public class CodeUserService {
         }
 
         try{
-            String url = "https://api.openai.com/v1/completions";
-            OkHttpClient client = getUnsafeOkHttpClient();
-            Map chatParam = new HashMap();
-            chatParam.put("model","text-davinci-003");
-
             String prompt = "现在你在一所大学中担任老师,我会给你一些题目,你需要通过代码的形式,返回结果,我的问题是:";
-            chatParam.put("prompt",prompt.concat(questions));
+
+            String url = "http://u.7scrm.com/lowCode/mingdaoyun/v1/gpt/doRequest";
+            Map chatParam = new HashMap();
+            chatParam.put("apikey",apikey);
+            chatParam.put("question",prompt.concat(questions));
+            chatParam.put("openId",openId);
             // 最多只能输出4k字,所以要控制返回的字符数量
-            chatParam.put("max_tokens",3500 - questions.length());
+            String str_res = OkHttpTools.post(OkHttpTools.MEDIA_TYPE_JSON,url,JsonConvert.toJson(chatParam));
 
-//                String str_ret = OkHttpTools.sslpost(OkHttpTools.MEDIA_TYPE_JSON, url, JsonConvert.toJson(chatParam), 30, header);
-//                return Return.SUCCESS(BasicCode.success).data(str_ret);
+
+            logger.info("返回:{}",str_res);
+            ChatHist chatHist = new ChatHist();
+            chatHist.setOpenid(openId);
+            chatHist.setQuestion(questions);
+            chatHist.setResult(str_res);
+            _chatHistMapper.insert(chatHist);
+
+
+            Return ret_resp = JsonConvert.toObject(str_res,Return.class);
+
+            if(!ret_resp.is_success()){
+                // TODO 提醒
+//                if("insufficient_quota".equals(type)){
 //
-
-            String requestBody = JsonConvert.toJson(chatParam); // 请求体，JSON 格式
-
-            MediaType mediaType = MediaType.parse("application/json; charset=utf-8"); // 设置请求体的媒体类型
-            RequestBody body = RequestBody.create(requestBody, mediaType); // 创建请求体
-
-
-            Request request = new Request.Builder()
-                .url(url)
-                .headers(headers)
-                //.header("authorization","Bearer "+ "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")
-                .post(body)
-                .build();
-
-            logger.info("{}的问题:{}",openId,questions);
-            try (Response response = client.newCall(request).execute()) {
-                String str_res = response.body().string();
-
-                logger.info("返回:{}",str_res);
-                ChatHist chatHist = new ChatHist();
-                chatHist.setOpenid(openId);
-                chatHist.setQuestion(questions);
-                chatHist.setResult(str_res);
-                _chatHistMapper.insert(chatHist);
-
-                Map map_res = JsonConvert.toObject(str_res,Map.class);
-                if(map_res.containsKey("error")){
-                    Map errorMsg = JsonConvert.toObject(JsonConvert.toJson(map_res.get("error")), Map.class);
-                    String type = String.valueOf(errorMsg.get("type"));
-                    // TODO 提醒
-                    if("insufficient_quota".equals(type)){
-
-                    }
-                    return Return.FAIL(BasicCode.error);
-                }else{
-                    List choices = JsonConvert.toObject(JsonConvert.toJson(map_res.get("choices")), List.class);
-                    Map content = JsonConvert.toObject(JsonConvert.toJson(choices.get(0)), Map.class);
-                    String text = String.valueOf(content.get("text"));
-                    return Return.SUCCESS(BasicCode.success).data(text);
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-                logger.error("请求异常:{}" , e.getMessage());
+//                }
                 return Return.FAIL(BasicCode.error);
+            }else{
+                String text = String.valueOf(ret_resp.get_data());
+                return Return.SUCCESS(BasicCode.success).data(text);
             }
         }catch(Exception e){
             e.printStackTrace();
@@ -394,6 +483,7 @@ public class CodeUserService {
         String str_keys = _tgDataSourceConfig.getApikey();
         List<String> keys = Arrays.asList(str_keys.split(","));
         keys.remove(Invalidkey);
+        keys.remove(QuotaKey);
         Collections.shuffle(keys);
         if(keys.size()>0){
             return keys.get(0);

@@ -49,3 +49,36 @@ CREATE TABLE ChatHist
  question VARCHAR(32),
  result text
 ) ENGINE = InnoDB;
+
+
+
+
+CREATE TABLE ChatGPTTopic (
+ id varchar(32) NOT NULL PRIMARY KEY,
+ deleteflg BIGINT(1) NULL DEFAULT 0,
+ createtime TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ,
+ updatetime TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ,
+ orgid varchar(32) NULL,
+ openid varchar(32) NULL,
+ topic varchar(32) NULL
+) ENGINE = InnoDB;
+CREATE INDEX idx_ChatGPTTopic_o_t ON ChatGPTTopic (orgid,topic);
+
+
+CREATE TABLE ChatGPTHist (
+ id varchar(32) NOT NULL PRIMARY KEY,
+ deleteflg BIGINT(1) NULL DEFAULT 0,
+ createtime TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ,
+ updatetime TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ,
+
+ src varchar(32) NULL,
+ openid varchar(32) NULL,
+ askid varchar(32) NULL,
+ topic varchar(32) NULL,
+ question text NULL,
+ result text NULL,
+ topicid varchar(32) NULL,
+ parentid text NULL,
+ conversationid text NULL
+);
+CREATE INDEX idx_ChatGPTHist_o_t ON ChatGPTHist (topic);

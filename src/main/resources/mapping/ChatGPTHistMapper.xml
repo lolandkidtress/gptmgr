@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.openapi.Dao.ChatGPTHistMapper">
+  <resultMap id="BaseResultMap" type="com.openapi.Model.chatgpt.ChatGPTHist">
+    <result column="id" jdbcType="VARCHAR" property="id" />
+    <result column="deleteflg" jdbcType="BIGINT" property="deleteflg" />
+    <result column="createtime" jdbcType="TIMESTAMP" property="createtime" />
+    <result column="updatetime" jdbcType="TIMESTAMP" property="updatetime" />
+
+    <result column="src" jdbcType="VARCHAR" property="src" />
+    <result column="openid" jdbcType="VARCHAR" property="openid" />
+    <result column="question" jdbcType="VARCHAR" property="question" />
+    <result column="result" jdbcType="VARCHAR" property="result" />
+
+    <result column="askid" jdbcType="VARCHAR" property="askid" />
+
+    <result column="topicid" jdbcType="VARCHAR" property="topicid" />
+    <result column="parentid" jdbcType="VARCHAR" property="parentid" />
+    <result column="conversationid" jdbcType="VARCHAR" property="conversationid" />
+
+  </resultMap>
+
+  <sql id="Base_Column_List">
+    id, deleteflg, createtime, updatetime,src,openid, question,result,askid ,topicid,parentId,conversationId
+  </sql>
+
+
+  <select id="selectByPrimaryKey" parameterType="java.lang.String" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List"/>
+    from ChatGPTHist
+    where id = #{id,jdbcType=VARCHAR}
+  </select>
+
+  <select id="fetchLast" parameterType="java.lang.String" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List"/>
+    from ChatGPTHist
+    where 1=1
+    and topicid = #{topicid,jdbcType=VARCHAR}
+    and src = 'answer'
+    order by createtime desc
+    limit 1
+  </select>
+
+  <select id="getAnswer" parameterType="java.lang.String" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List"/>
+    from ChatGPTHist
+    where askid = #{id,jdbcType=VARCHAR}
+  </select>
+
+  <insert id="insert" parameterType="com.openapi.Model.chatgpt.ChatGPTHist">
+    insert into ChatGPTHist
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        id,
+      </if>
+      <if test="createtime != null">
+        createtime,
+      </if>
+      <if test="src != null">
+        src,
+      </if>
+      <if test="openid != null">
+        openid,
+      </if>
+      <if test="question != null">
+        question,
+      </if>
+      <if test="result != null">
+        result,
+      </if>
+      <if test="askid != null">
+        askid,
+      </if>
+      <if test="topicid != null">
+        topicid,
+      </if>
+      <if test="parentid != null">
+        parentid,
+      </if>
+      <if test="conversationid != null">
+        conversationid,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        #{id,jdbcType=VARCHAR},
+      </if>
+      <if test="createtime != null">
+        #{createtime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="src != null">
+        #{src,jdbcType=TIMESTAMP},
+      </if>
+      <if test="openid != null">
+        #{openid,jdbcType=VARCHAR},
+      </if>
+      <if test="question != null">
+        #{question,jdbcType=VARCHAR},
+      </if>
+      <if test="result != null">
+        #{result,jdbcType=VARCHAR},
+      </if>
+      <if test="askid != null">
+        #{askid,jdbcType=VARCHAR},
+      </if>
+      <if test="topicid != null">
+        #{topicid,jdbcType=VARCHAR},
+      </if>
+      <if test="parentid != null">
+        #{parentid,jdbcType=VARCHAR},
+      </if>
+      <if test="conversationid != null">
+        #{conversationid,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+
+  <sql id="fromSearchSql">
+    from ChatGPTHist
+    where 1=1
+    and deleteflg = 0
+    <if test="openid != null and openid != ''">
+      and openid = #{openid}
+    </if>
+    <if test="topicid != null and topicid != ''">
+      and topicid = #{topicid}
+    </if>
+  </sql>
+
+  <select id="search" parameterType="Map" resultType="com.openapi.Model.chatgpt.ChatGPTHist">
+    select
+    <include refid="Base_Column_List"/>
+    <include refid="fromSearchSql"/>
+    order by createtime asc
+    <if test="offset !=null">
+      offset ${offset}
+    </if>
+    <if test="limit !=null ">
+      limit ${limit}
+    </if>
+  </select>
+
+  <select id="searchCount" parameterType="Map" resultType="Integer">
+    select count(1)
+    <include refid="fromSearchSql"/>
+  </select>
+
+  <select id="searchOne" parameterType="Map" resultType="com.openapi.Model.chatgpt.ChatGPTHist">
+    select
+    <include refid="Base_Column_List"/>
+    <include refid="fromSearchSql"></include>
+    limit 1
+  </select>
+
+
+</mapper>

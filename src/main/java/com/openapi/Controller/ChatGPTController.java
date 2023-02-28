@@ -100,6 +100,30 @@ public class ChatGPTController {
     return Return.SUCCESS(BasicCode.success).total(cnt);
   }
 
+  // 没有topic就新建,有就直接返回
+  @GetMapping("/getCurrentTopicOrSet")
+  public Return ask(String openid) throws Exception{
+
+    Map param = new HashMap();
+    param.put("openid",openid);
+
+    List<ChatGPTTopic> datas = _chatGPTService.searchTopic(param,1,0);
+    if(datas.size()<=0){
+      ChatGPTTopic chatGPTTopic = new ChatGPTTopic();
+      chatGPTTopic.setOpenid(openid);
+
+      int cnt = _chatGPTService.insertTopic(chatGPTTopic);
+      if(cnt > 0){
+        return Return.SUCCESS(BasicCode.success).data(chatGPTTopic.getId());
+      }else {
+        return Return.FAIL(BasicCode.error);
+      }
+
+    }else{
+      return Return.SUCCESS(BasicCode.success).data(datas.get(0).getId());
+    }
+  }
+
 
   @PostMapping("/ask")
   public Return ask(@RequestBody ChatGPTHist chatGPTHist) throws Exception{

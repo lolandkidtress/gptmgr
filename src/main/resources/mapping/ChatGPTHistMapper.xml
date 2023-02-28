@@ -135,11 +135,11 @@
     <include refid="Base_Column_List"/>
     <include refid="fromSearchSql"/>
     order by createtime asc
-    <if test="offset !=null">
-      offset ${offset}
-    </if>
     <if test="limit !=null ">
       limit ${limit}
+    </if>
+    <if test="offset !=null">
+      offset ${offset}
     </if>
   </select>
 

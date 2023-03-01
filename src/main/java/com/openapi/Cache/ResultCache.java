@@ -25,17 +25,13 @@ public class ResultCache {
         .expireAfterWrite(5, TimeUnit.MINUTES)
         .build();
 
-    public void setCache (String askid){
-        results.put(askid,"1");
+    public void setCache (String askid,String id){
+        results.put(askid,id);
     }
 
-    public boolean isCacheExist (String askid){
+    public String isCacheExist (String askid){
+        return results.getIfPresent(askid);
 
-        if(results.getIfPresent(askid)!=null){
-            return true;
-        }else{
-            return false;
-        }
     }
 
 }

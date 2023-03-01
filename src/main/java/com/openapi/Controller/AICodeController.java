@@ -137,21 +137,6 @@ public class AICodeController {
 
         return _codeUserService.doRequest(openId,question);
     }
-    // chatgpt网页接口
-    @PostMapping("/doChat")
-    public Return doChat(@RequestBody Map<String,String> postQuestion) {
-        String openId = postQuestion.get("openId");
-        String question = postQuestion.get("question");
-
-        if (Strings.isNullOrEmpty(openId)) {
-            return Return.FAIL(BasicCode.parameters_incorrect);
-        }
-        if (Strings.isNullOrEmpty(question)) {
-            return Return.FAIL(BasicCode.parameters_incorrect);
-        }
-
-        return _codeUserService.doChat(openId,question);
-    }
     // 假接口,用于调试
     @PostMapping("/doDummy")
     public Return doDummy(@RequestBody Map<String,String> postQuestion) {

@@ -1,5 +1,6 @@
 package com.openapi.Controller;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -17,9 +18,12 @@ import org.springframework.web.bind.annotation.RestController;
 import com.google.common.base.Strings;
 import com.openapi.Basic.BasicCode;
 import com.openapi.Basic.Return;
+import com.openapi.Model.CodeUserQuota;
 import com.openapi.Model.chatgpt.ChatGPTHist;
 import com.openapi.Model.chatgpt.ChatGPTTopic;
 import com.openapi.Service.ChatGPTService;
+import com.openapi.Service.CodeUserService;
+import com.openapi.tools.OkHttpClientUtil.OkHttpTools;
 
 
 @RestController
@@ -30,6 +34,9 @@ public class ChatGPTController {
 
   @Autowired
   ChatGPTService _chatGPTService;
+  @Autowired
+  CodeUserService _codeUserService;
+
 
   @PostMapping("/insertTopic")
   public Return insertTopic(@RequestBody ChatGPTTopic chatGPTTopic) throws Exception{
@@ -102,7 +109,7 @@ public class ChatGPTController {
 
   // 没有topic就新建,有就直接返回
   @GetMapping("/getCurrentTopicOrSet")
-  public Return ask(String openid) throws Exception{
+  public Return getCurrentTopicOrSet(String openid) throws Exception{
 
     Map param = new HashMap();
     param.put("openid",openid);
@@ -135,12 +142,41 @@ public class ChatGPTController {
       return Return.FAIL(BasicCode.parameters_incorrect);
     }
 
+    CodeUserQuota quota = _codeUserService.getQuota(chatGPTHist.getOpenid());
+
+    if(quota==null){
+      logger.info("没有 {} 的quota的记录" , chatGPTHist.getOpenid());
+      return Return.FAIL(BasicCode.quota_over_limit);
+    }
+
+    if(quota.getCnt() > quota.getMaxcnt()){
+
+      if(quota.getUpdatetime().getTime() >= _codeUserService.getTodayZeroTimeStamp() ){
+        logger.info("{} 的quota超过" , chatGPTHist.getOpenid());
+        return Return.FAIL(BasicCode.quota_over_limit);
+      }else{
+        // 每天重置
+        quota.setCnt(0);
+        quota.setUpdatetime(new Date());
+        _codeUserService.saveQuota(quota);
+      }
+    }
+
     int cnt = _chatGPTService.ask(chatGPTHist);
     if(cnt > 0){
       return Return.SUCCESS(BasicCode.success).data(chatGPTHist.getId());
     }else {
       return Return.FAIL(BasicCode.error);
     }
+  }
+
+
+  @PostMapping("/conversations")
+  public Return conversations() throws Exception{
+
+    String str = OkHttpTools.get("http://124.222.141.235:10005/conversations",new HashMap<>());
+    logger.info(str);
+    return Return.SUCCESS(BasicCode.success).data(str);
   }
 
   @PostMapping("/answer")
@@ -165,14 +201,31 @@ public class ChatGPTController {
 
   }
 
+  @GetMapping("/getAnswer")
+  public Return getAnswer(String id) throws Exception{
+
+    if(Strings.isNullOrEmpty(id)) {
+      return Return.FAIL(BasicCode.parameters_incorrect);
+    }
+    ChatGPTHist data =  _chatGPTService.getAnswer(id);
+
+    if(data!=null){
+      return Return.SUCCESS(BasicCode.success).data(data);
+    } else {
+      return Return.FAIL(BasicCode.data_not_found);
+    }
+  }
+
   @GetMapping("/hasAnswer")
   public Return hasAnswer(String askId) throws Exception{
 
     if(Strings.isNullOrEmpty(askId)) {
       return Return.FAIL(BasicCode.parameters_incorrect);
     }
-    if(_chatGPTService.hasAnswer(askId)){
-      return Return.SUCCESS(BasicCode.success);
+    String id =  _chatGPTService.hasAnswer(askId);
+
+    if(!Strings.isNullOrEmpty(id)){
+      return Return.SUCCESS(BasicCode.success).data(id);
     } else {
       return Return.FAIL(BasicCode.data_not_found);
     }

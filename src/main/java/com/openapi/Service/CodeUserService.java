@@ -470,7 +470,7 @@ public class CodeUserService {
 
     }
 
-    public static long getTodayZeroTimeStamp() {
+    public long getTodayZeroTimeStamp() {
         Calendar calendar = Calendar.getInstance();
         calendar.set(Calendar.HOUR_OF_DAY, 0);
         calendar.set(Calendar.MINUTE, 0);

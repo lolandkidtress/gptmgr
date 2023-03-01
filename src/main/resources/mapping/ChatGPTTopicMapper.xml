@@ -66,7 +66,7 @@
   <sql id="fromSearchSql">
     from ChatGPTTopic
     where 1=1
-
+    and deleteflg = 0
     <if test="orgid != null and orgid != ''">
       and orgid = #{orgid}
     </if>

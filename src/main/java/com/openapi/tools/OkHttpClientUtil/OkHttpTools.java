@@ -39,8 +39,8 @@ public class OkHttpTools {
 
     private static final Logger logger = LogManager.getLogger(OkHttpTools.class);
 
-    private static Integer socket_timeout = 30;// response超时时间
-    private static Integer connect_timeout = 3;// 连接超时时间
+    private static Integer socket_timeout = 120;// response超时时间
+    private static Integer connect_timeout = 10;// 连接超时时间
     private static Integer maxRequests = 128; // 最大的并发请求数
     private static Integer maxRequestsPerHost = 128; //单个主机最大请求并发数
 
@@ -67,7 +67,6 @@ public class OkHttpTools {
         logger.info("初始化HTTP CLIENT");
     }
 
-    //TODO zipkin
     private static final Callback default_async_callback = new Callback() {
         @Override
         public void onFailure(Call call, IOException e) {
@@ -302,7 +301,7 @@ public class OkHttpTools {
     }
 
     public static void asyncPost(String mediaType, String url, Map<String, String> params, int readTimeoutSeconds,
-        Map<String, String> header, Callback callback, boolean ignoreURLValid)
+        Map<String, String> header, Callback callback)
         throws Exception {
 
         String type = "application/json; charset=utf-8";

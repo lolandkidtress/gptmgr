@@ -59,10 +59,11 @@ public class ChatGPTService {
                 Map param = new HashMap();
                 try {
                     String str_ret = OkHttpTools.get(url,param);
-                    logger.info(str_ret);
+                    logger.info("检查chatgpt的token返回:{}",str_ret);
+
                 }catch(Exception e){
                     e.printStackTrace();
-                    logger.error("请求接口异常");
+                    logger.error("检查chatgpt的token返回异常",e);
                 }
 
 

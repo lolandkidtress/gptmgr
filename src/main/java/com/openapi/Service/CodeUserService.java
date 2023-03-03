@@ -287,7 +287,7 @@ public class CodeUserService {
 //        }
 
         try{
-            String url = _tgDataSourceConfig.getApiserver().concat("/aicode/getModel");
+            String url = _tgDataSourceConfig.getApiserver().concat("/TCGMGR/aicode/getModel");
             Map param = new HashMap();
             param.put("apikey",key);
 
@@ -437,7 +437,7 @@ public class CodeUserService {
         try{
             // String prompt = "现在你在一所大学中担任老师,我会给你一些题目,你需要通过代码的形式,返回结果,我的问题是:";
             String prompt = "";
-            String url = _tgDataSourceConfig.getApiserver().concat("/aicode/doRequest");
+            String url = _tgDataSourceConfig.getApiserver().concat("/TCGMGR/aicode/doRequest");
 
             Map chatParam = new HashMap();
             chatParam.put("apikey",apikey);

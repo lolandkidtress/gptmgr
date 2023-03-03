@@ -43,6 +43,10 @@ public class TgDataSourceConfig {
     @Value("${chatserver}")
     private String chatserver;
 
+    @Value("${apiserver}")
+    private String apiserver;
+
+
     @Primary
     @Bean(name = "huarongdaoDataSource")
     public DataSource clusterDataSource() {
@@ -82,7 +86,7 @@ public class TgDataSourceConfig {
         return chatserver;
     }
 
-    public void setChatserver(String chatserver) {
-        this.chatserver = chatserver;
+    public String getApiserver() {
+        return apiserver;
     }
 }

@@ -22,6 +22,7 @@ import com.openapi.Database.TgDataSourceConfig;
 import com.openapi.Model.chatgpt.ChatGPTHist;
 import com.openapi.Model.chatgpt.ChatGPTTopic;
 import com.openapi.tools.OkHttpClientUtil.OkHttpTools;
+import com.openapi.tools.SendAlarmTools;
 
 import javax.annotation.Resource;
 import okhttp3.Call;
@@ -48,7 +49,7 @@ public class ChatGPTService {
     @Resource
     CodeUserService _codeUserService;
 
-    @Scheduled(initialDelay = 10000, fixedRate = 300000)
+    @Scheduled(initialDelay = 10000, fixedRate = 60 * 60 * 1000)
     public void checkToken(){
         Runnable r = new Runnable() {
             @Override
@@ -59,14 +60,13 @@ public class ChatGPTService {
                 Map param = new HashMap();
                 try {
                     String str_ret = OkHttpTools.get(url,param);
-                    logger.info("检查chatgpt的token返回:{}",str_ret);
+                    logger.info("检查chatgpt的token返回:{}",str_ret.substring(0,10));
 
                 }catch(Exception e){
                     e.printStackTrace();
                     logger.error("检查chatgpt的token返回异常",e);
+                    SendAlarmTools.sendAlarm("chatgpt token失效");
                 }
-
-
             }
         };
         Thread th = new Thread(r);

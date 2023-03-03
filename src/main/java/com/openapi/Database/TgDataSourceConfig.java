@@ -40,9 +40,6 @@ public class TgDataSourceConfig {
     @Value("${mysql.password}")
     private String password;
 
-    @Value("${apikey}")
-    private String apikey;
-
     @Value("${chatserver}")
     private String chatserver;
 
@@ -79,14 +76,6 @@ public class TgDataSourceConfig {
             log.error("注解mybatis读取数据异常", e);
             return null;
         }
-    }
-
-    public String getApikey() {
-        return apikey;
-    }
-
-    public void setApikey(String apikey) {
-        this.apikey = apikey;
     }
 
     public String getChatserver() {

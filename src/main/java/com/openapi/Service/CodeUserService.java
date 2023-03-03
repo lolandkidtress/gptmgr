@@ -4,7 +4,7 @@ import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
@@ -26,17 +26,21 @@ import com.google.common.base.Strings;
 import com.openapi.Basic.BasicCode;
 import com.openapi.Basic.JsonConvert;
 import com.openapi.Basic.Return;
+import com.openapi.Dao.ApiKeyMapper;
 import com.openapi.Dao.ChatHistMapper;
 import com.openapi.Dao.CodeUserMapper;
 import com.openapi.Dao.CodeUserQuotaMapper;
 import com.openapi.Dao.InviteCodeMapper;
 import com.openapi.Database.TgDataSourceConfig;
+import com.openapi.Model.ApiKey;
 import com.openapi.Model.ChatHist;
 import com.openapi.Model.CodeUser;
 import com.openapi.Model.CodeUserQuota;
 import com.openapi.Model.InviteCode;
 import com.openapi.tools.OkHttpClientUtil.OkHttpTools;
+import com.openapi.tools.SendAlarmTools;
 
+import javax.annotation.Resource;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
@@ -67,6 +71,10 @@ public class CodeUserService {
 
     @Autowired
     ChatHistMapper _chatHistMapper;
+
+    @Resource
+    private ApiKeyMapper _apiKeyMapper;
+
 
 
     public int save(CodeUser bizUser){
@@ -190,7 +198,7 @@ public class CodeUserService {
     }
 
     public String getServerUsability(){
-        List<String> keys = getAllKeys();
+        List<ApiKey> keys = getAllKeys();
         if(keys.size()<=0){
             return "高负载";
         }
@@ -207,24 +215,26 @@ public class CodeUserService {
 
     }
 
-    @Scheduled(initialDelay = 10000, fixedRate = 300000)
+    @Scheduled(initialDelay = 10000, fixedRate = 300 * 1000)
     public void checkValidKey(){
         Runnable r = new Runnable() {
             @Override
             public void run() {
                 logger.info("开始检查key的可用性");
-                List<String> keys = getAllKeys();
+                List<ApiKey> keys = getAllKeys();
                 if (keys.size() > 0) {
                     Invalidkey.clear();
                 }
-                for (String key : keys) {
-                   Return ret = getModel(key);
-                   if(!ret.is_success()){
-                       Invalidkey.add(key);
-                   }
+                for (ApiKey key : keys) {
+                    Return ret = getModel(key.getApikey());
+                    if(!ret.is_success()){
+                        Invalidkey.add(key.getApikey());
+                    }
                 }
                 if(Invalidkey.size()>0){
                     logger.error("失效的key:{}",JsonConvert.toJson(Invalidkey));
+
+                    SendAlarmTools.sendAlarm("api失效的key:"+JsonConvert.toJson(Invalidkey));
                 }else{
                     // logger.info("全部通过");
                 }
@@ -277,7 +287,7 @@ public class CodeUserService {
 //        }
 
         try{
-            String url = "http://u.7scrm.com/lowCode/mingdaoyun/v1/gpt/getModel";
+            String url = _tgDataSourceConfig.getChatserver().concat("/aicode/getModel");
             Map param = new HashMap();
             param.put("apikey",key);
 
@@ -395,9 +405,6 @@ public class CodeUserService {
 //            return Return.FAIL(BasicCode.error);
 //        }
 
-    public Return doChat(String openId,String questions){
-        return Return.FAIL(BasicCode.error);
-    }
     public Return doRequest(String openId,String questions){
 
         String apikey = getRandomKey();
@@ -428,13 +435,15 @@ public class CodeUserService {
         }
 
         try{
-            String prompt = "现在你在一所大学中担任老师,我会给你一些题目,你需要通过代码的形式,返回结果,我的问题是:";
+            // String prompt = "现在你在一所大学中担任老师,我会给你一些题目,你需要通过代码的形式,返回结果,我的问题是:";
+            String prompt = "";
+            String url = _tgDataSourceConfig.getChatserver().concat("/aicode/doRequest");
 
-            String url = "http://u.7scrm.com/lowCode/mingdaoyun/v1/gpt/doRequest";
             Map chatParam = new HashMap();
             chatParam.put("apikey",apikey);
             chatParam.put("question",prompt.concat(questions));
             chatParam.put("openId",openId);
+            chatParam.put("model",openId);
             // 最多只能输出4k字,所以要控制返回的字符数量
             String str_res = OkHttpTools.post(OkHttpTools.MEDIA_TYPE_JSON,url,JsonConvert.toJson(chatParam));
 
@@ -450,10 +459,10 @@ public class CodeUserService {
             Return ret_resp = JsonConvert.toObject(str_res,Return.class);
 
             if(!ret_resp.is_success()){
-                // TODO 提醒
-//                if("insufficient_quota".equals(type)){
-//
-//                }
+                if(str_res.contains("insufficient_quota")){
+                    logger.error("{} 余额不足",apikey);
+                    SendAlarmTools.sendAlarm(apikey.concat("余额不足"));
+                }
                 return Return.FAIL(BasicCode.error);
             }else{
                 String text = String.valueOf(ret_resp.get_data());
@@ -480,8 +489,13 @@ public class CodeUserService {
     }
 
     public String getRandomKey(){
-        String str_keys = _tgDataSourceConfig.getApikey();
-        List<String> keys = Arrays.asList(str_keys.split(","));
+        List<ApiKey> lists = getAllKeys();
+
+        List<String> keys = new ArrayList<>();
+        for (ApiKey list : lists) {
+            keys.add(list.getApikey());
+        }
+
         keys.remove(Invalidkey);
         keys.remove(QuotaKey);
         Collections.shuffle(keys);
@@ -493,9 +507,8 @@ public class CodeUserService {
         }
     }
 
-    public List<String> getAllKeys(){
-        String str_keys = _tgDataSourceConfig.getApikey();
-        List<String> keys = Arrays.asList(str_keys.split(","));
+    public List<ApiKey> getAllKeys(){
+        List<ApiKey> keys = _apiKeyMapper.search(new HashMap<>());
         return keys;
     }
 

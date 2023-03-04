@@ -1,5 +1,6 @@
 package com.openapi.Controller;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
@@ -12,12 +13,13 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.google.common.base.Strings;
 import com.openapi.Basic.BasicCode;
+import com.openapi.Basic.JsonConvert;
 import com.openapi.Basic.Return;
 import com.openapi.Model.CodeUser;
 import com.openapi.Model.CodeUserQuota;
 import com.openapi.Service.CodeUserService;
-import com.google.common.base.Strings;
 
 
 @RestController
@@ -122,21 +124,57 @@ public class AICodeController {
         }
         return _codeUserService.inputCode(openId,code);
     }
+    // 3.5 官方接口
+    @PostMapping("/doAsk")
+    public Return doAsk(@RequestBody Map<String,Object> postQuestion) {
 
+
+        if (!postQuestion.containsKey("openId")) {
+            return Return.FAIL(BasicCode.parameters_incorrect);
+        }
+        if (!postQuestion.containsKey("question")) {
+            return Return.FAIL(BasicCode.parameters_incorrect);
+        }
+
+        String openId = String.valueOf(postQuestion.get("openId"));
+        // list 提示词,用于传上下文
+        Object hint = postQuestion.get("hint");
+        // 实际的问题
+        String question = String.valueOf(postQuestion.get("question"));
+
+        String apikey = String.valueOf(postQuestion.get("apikey"));
+
+        return _codeUserService.doAsk(apikey,openId,hint,question);
+    }
+
+
+    // 给小程序调用的
     @PostMapping("/doRequest")
-    public Return doRequest(@RequestBody Map<String,String> postQuestion) {
-        String openId = postQuestion.get("openId");
-        String question = postQuestion.get("question");
-        String method = postQuestion.get("method");
+    public Return doRequest(@RequestBody Map<String,Object> postQuestion) {
 
-        if (Strings.isNullOrEmpty(openId)) {
+        if (!postQuestion.containsKey("apikey")) {
             return Return.FAIL(BasicCode.parameters_incorrect);
         }
-        if (Strings.isNullOrEmpty(question)) {
+        if (!postQuestion.containsKey("question")) {
             return Return.FAIL(BasicCode.parameters_incorrect);
         }
+        try{
+            String apikey = String.valueOf(postQuestion.get("apikey"));
+            List question = JsonConvert.toObject(JsonConvert.toJson(postQuestion.get("question")), List.class);
+            Double temperature = 0.2;
+            if (postQuestion.containsKey("temperature")) {
 
-        return _codeUserService.doRequest(method,openId,question,postQuestion);
+                temperature = Double.parseDouble(String.valueOf(postQuestion.get("temperature")));
+                if(temperature > 1){
+                    return Return.FAIL(BasicCode.parameters_incorrect);
+                }
+            }
+
+            return _codeUserService.doRequest(apikey,temperature,question);
+        }catch(Exception e){
+            logger.error(e);
+            return Return.FAIL(BasicCode.parameters_incorrect);
+        }
     }
     // 假接口,用于调试
     @PostMapping("/doDummy")
@@ -154,22 +192,5 @@ public class AICodeController {
         return Return.SUCCESS(BasicCode.success).data("中所有低于等于500的偶数?\\n\\ndef evenFibonacci(n):\\n    result = []\\n    # Initialize first two even Fibonacci numbers \\n    f1 = 0\\n    f2 = 2\\n \\n    # Add the first two even numbers to result \\n    result.append(f1)\\n    result.append(f2)\\n \\n    next_even_fib = f1 + f2\\n \\n    # Calculate and add remaining even numbers of the \\n    # Fibonacci series till n\\n    while(next_even_fib <= n):\\n        result.append(next_even_fib)\\n        next_even_fib = 4 * f2 + f1\\n        f1 = f2\\n        f2 = next_even_fib\\n \\n    # Print all even elements of result\\n    print(*result, sep = \\\", \\\")\\n \\n# Driver code\\nn = 500\\nevenFibonacci(n)");
 
     }
-
-    @PostMapping("/getModel")
-    public Return getModel(@RequestBody Map<String,String> postQuestion) throws Exception{
-        String openId = postQuestion.get("openId");
-        String question = postQuestion.get("question");
-
-        if (Strings.isNullOrEmpty(openId)) {
-            return Return.FAIL(BasicCode.parameters_incorrect);
-        }
-        if (Strings.isNullOrEmpty(question)) {
-            return Return.FAIL(BasicCode.parameters_incorrect);
-        }
-
-
-        return _codeUserService.doRequest("get",openId,question,postQuestion);
-    }
-
 
 }

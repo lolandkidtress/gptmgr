@@ -43,6 +43,10 @@ public class TgDataSourceConfig {
     @Value("${apikey}")
     private String apikey;
 
+
+    @Value("${apiserver}")
+    private String apiserver;
+
     @Primary
     @Bean(name = "huarongdaoDataSource")
     public DataSource clusterDataSource() {
@@ -82,7 +86,7 @@ public class TgDataSourceConfig {
         return apikey;
     }
 
-    public void setApikey(String apikey) {
-        this.apikey = apikey;
+    public String getApiserver() {
+        return apiserver;
     }
 }

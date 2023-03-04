@@ -124,7 +124,9 @@ public class AICodeController {
         }
         return _codeUserService.inputCode(openId,code);
     }
-    // 3.5 官方接口
+
+
+    // 给小程序调用的入口
     @PostMapping("/doAsk")
     public Return doAsk(@RequestBody Map<String,Object> postQuestion) {
 
@@ -148,7 +150,7 @@ public class AICodeController {
     }
 
 
-    // 给小程序调用的
+    // 3.5 官方接口
     @PostMapping("/doRequest")
     public Return doRequest(@RequestBody Map<String,Object> postQuestion) {
 
@@ -169,8 +171,8 @@ public class AICodeController {
                     return Return.FAIL(BasicCode.parameters_incorrect);
                 }
             }
-
             return _codeUserService.doRequest(apikey,temperature,question);
+            // return Return.SUCCESS(BasicCode.success).data("你好");
         }catch(Exception e){
             logger.error(e);
             return Return.FAIL(BasicCode.parameters_incorrect);
